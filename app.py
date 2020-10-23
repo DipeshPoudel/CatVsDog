@@ -1,14 +1,14 @@
 import os
 from werkzeug.utils import secure_filename
 from flask import Flask, render_template, request, redirect, flash
+from predict import make_prediction
 
-
-UPLOAD_FOLDER = '/static/uploads/'
+UPLOAD_FOLDER = 'static/uploads/'
 app = Flask(__name__)
 app.secret_key = 'xenon-key'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
-app.debug = True
+app.debug = False
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 
@@ -34,7 +34,8 @@ def upload_image():
         filename = secure_filename(file.filename)
         image_full_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(image_full_path)
-        return render_template('index.html', filename=filename, full_path=image_full_path)
+        image_result = make_prediction(image_full_path)
+        return render_template('index.html', image_result=image_result)
     else:
         flash('Allowed image types are -> png, jpg, jpeg, gif')
         return redirect(request.url)
